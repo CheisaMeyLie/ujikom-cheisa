@@ -70,7 +70,6 @@ ujikom_sistem_parkir/
 |
 |-- gambar/                 # Aset gambar (logo, avatar, dll.)
 |-- assets/                 # Aset tambahan (JS libraries)
-|-- APP-CODE.txt            # Kompilasi seluruh kode proyek
 ```
 
 ---
