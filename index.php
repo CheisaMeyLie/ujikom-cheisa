@@ -14,11 +14,11 @@ include 'config/koneksi.php';
 // yang sesuai dengan role-nya, tanpa perlu login ulang.
 if (isset($_SESSION['username'])) {
     if ($_SESSION['level'] == 'admin')
-        header('Location: /ujikom_sistem_parkir/admin/dashboard.php');
+        header('Location: /admin/dashboard.php');
     if ($_SESSION['level'] == 'petugas')
-        header('Location: /ujikom_sistem_parkir/petugas/masuk.php');
+        header('Location: /petugas/masuk.php');
     if ($_SESSION['level'] == 'owner')
-        header('Location: /ujikom_sistem_parkir/owner/laporan.php');
+        header('Location: /owner/laporan.php');
     exit;
 }
 

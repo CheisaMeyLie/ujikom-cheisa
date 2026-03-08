@@ -12,6 +12,6 @@ session_start();
 session_destroy();
 
 // Redirect ke halaman login setelah logout selesai
-header("Location: /ujikom_sistem_parkir/index.php");
+header("Location: /index.php");
 exit;
 ?>
