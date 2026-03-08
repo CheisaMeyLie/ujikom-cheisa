@@ -1,7 +1,17 @@
 <?php
+// =============================================================================
+// FILE: index.php
+// FUNGSI: Halaman login utama sistem parkir Play Park.
+//         Menangani autentikasi pengguna dan redirect berdasarkan role.
+// =============================================================================
+
+// Mulai session untuk menyimpan data login pengguna
 session_start();
 include 'config/koneksi.php';
 
+// --- REDIRECT JIKA SUDAH LOGIN ---
+// Jika pengguna sudah memiliki session aktif, langsung arahkan ke halaman
+// yang sesuai dengan role-nya, tanpa perlu login ulang.
 if (isset($_SESSION['username'])) {
     if ($_SESSION['level'] == 'admin')
         header('Location: /ujikom_sistem_parkir/admin/dashboard.php');
@@ -12,20 +22,28 @@ if (isset($_SESSION['username'])) {
     exit;
 }
 
+// --- PROSES FORM LOGIN ---
+// Variabel untuk menampung pesan error jika login gagal
 $error = '';
+
 if (isset($_POST['login'])) {
+    // Ambil data dari form POST
     $username = $_POST['username'];
     $password = $_POST['password'];
 
+    // Query untuk mencari user berdasarkan username dan hanya yang aktif (is_active=1)
     $query = mysqli_query($conn, "SELECT * FROM tb_user WHERE username='$username' AND is_active=1");
     $user = mysqli_fetch_assoc($query);
 
     if ($user) {
+        // Cocokkan password yang diinput dengan password di database
         if ($password == $user['password']) {
+            // Jika cocok, simpan data user ke dalam session
             $_SESSION['username'] = $user['username'];
             $_SESSION['level'] = $user['level'];
             $_SESSION['id_user'] = $user['id_user'];
 
+            // Redirect berdasarkan level/role pengguna
             if ($user['level'] == 'admin')
                 header('Location: admin/dashboard.php');
             if ($user['level'] == 'petugas')
@@ -35,14 +53,15 @@ if (isset($_POST['login'])) {
             exit;
 
         } else {
+            // Password tidak cocok
             $error = "Password salah!";
         }
     } else {
+        // Username tidak ditemukan atau akun tidak aktif
         $error = "Username tidak ditemukan!";
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html>
 
@@ -51,6 +70,7 @@ if (isset($_POST['login'])) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
+        /* === VARIABEL WARNA GLOBAL === */
         :root {
             --primary-brown: #7d634a;
             --soft-cream: #f5f4f0;
@@ -58,6 +78,7 @@ if (isset($_POST['login'])) {
             --text-dark: #4a4036;
         }
 
+        /* === RESET & BASE === */
         * {
             margin: 0;
             padding: 0;
@@ -73,6 +94,7 @@ if (isset($_POST['login'])) {
             background-color: #f5f5f0;
         }
 
+        /* Layout utama: dua panel berdampingan */
         .main-container {
             display: flex;
             width: 100%;
@@ -80,12 +102,10 @@ if (isset($_POST['login'])) {
             overflow: hidden;
         }
 
-        /* BAGIAN KIRI */
-        /* BAGIAN KIRI - DIPERBAIKI */
+        /* === PANEL KIRI (INFO) === */
         .panel.info {
             flex: 1.2;
             background-color: #f5f4f0;
-            /* Warna krem sesuai gambar */
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -95,7 +115,7 @@ if (isset($_POST['login'])) {
             position: relative;
         }
 
-        /* Background Pattern Huruf P samar */
+        /* Pola huruf "P" samar sebagai background dekoratif */
         .panel.info::before {
             content: "";
             position: absolute;
@@ -113,14 +133,12 @@ if (isset($_POST['login'])) {
 
         .logo-container img {
             width: 270px;
-            /* Ukuran logo e-park + traffic light */
             height: auto;
         }
 
         .info h1 {
             font-size: 2.8rem;
             color: #5d534a;
-            /* Warna cokelat teks */
             letter-spacing: 2px;
             margin-top: -10px;
             font-weight: 700;
@@ -158,7 +176,7 @@ if (isset($_POST['login'])) {
             font-size: 1rem;
         }
 
-        /* --- BAGIAN KANAN (LOGIN BOX) --- */
+        /* === PANEL KANAN (FORM LOGIN) === */
         .panel.login-box {
             flex: 1;
             background-color: var(--primary-brown);
@@ -177,6 +195,7 @@ if (isset($_POST['login'])) {
             position: relative;
         }
 
+        /* Garis oranye dekoratif di bawah judul "Login" */
         .login-box h2::after {
             content: "";
             position: absolute;
@@ -201,6 +220,7 @@ if (isset($_POST['login'])) {
             letter-spacing: 1px;
         }
 
+        /* Wrapper untuk menempatkan ikon di dalam input */
         .input-wrapper {
             position: relative;
             display: flex;
@@ -218,6 +238,7 @@ if (isset($_POST['login'])) {
         .input-wrapper input {
             width: 100%;
             padding: 18px 20px 18px 55px;
+            /* padding-left besar untuk beri ruang ikon */
             border-radius: 15px;
             border: 2px solid transparent;
             background-color: rgba(255, 255, 255, 0.9);
@@ -261,6 +282,7 @@ if (isset($_POST['login'])) {
             transform: scale(0.98);
         }
 
+        /* Kotak notifikasi error login */
         .error {
             background: #ff7675;
             color: white;
@@ -273,6 +295,7 @@ if (isset($_POST['login'])) {
             animation: shake 0.4s;
         }
 
+        /* Layout berubah ke kolom di layar kecil */
         @media (max-width: 768px) {
             .main-container {
                 flex-direction: column;
@@ -284,6 +307,8 @@ if (isset($_POST['login'])) {
 <body>
 
     <div class="main-container">
+
+        <!-- Panel Kiri: Branding dan informasi sistem -->
         <div class="panel info">
             <div class="logo-container">
                 <img src="gambar/logo_login.jpeg" alt="e-Park Logo">
@@ -300,9 +325,11 @@ if (isset($_POST['login'])) {
             </div>
         </div>
 
+        <!-- Panel Kanan: Form login -->
         <div class="panel login-box">
             <h2>Login</h2>
 
+            <!-- Tampilkan pesan error jika login gagal -->
             <?php if ($error): ?>
                 <div class="error"><?= $error ?></div>
             <?php endif; ?>
@@ -324,11 +351,13 @@ if (isset($_POST['login'])) {
                     </div>
                 </div>
 
+                <!-- Tombol submit form login -->
                 <button name="login" type="submit">
                     LOGIN <i class="fas fa-arrow-right"></i>
                 </button>
             </form>
         </div>
+
     </div>
 
 </body>
