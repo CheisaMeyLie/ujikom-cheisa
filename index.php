@@ -36,7 +36,7 @@ if (isset($_POST['login'])) {
 $query = mysqli_query($conn, "SELECT * FROM tb_user WHERE username='$username' AND password='$password' AND status_aktif=1");    $user = mysqli_fetch_assoc($query);
 
     if ($user) {
-        // Cocokkan password yang diinput dengan password di database
+        // Cocokkan password yang diinput dengan password di databaseee
         if ($password == $user['password']) {
             // Jika cocok, simpan data user ke dalam session
             $_SESSION['username'] = $user['username'];
