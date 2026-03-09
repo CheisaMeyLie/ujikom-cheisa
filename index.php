@@ -32,8 +32,8 @@ if (isset($_POST['login'])) {
     $password = $_POST['password'];
 
     // Query untuk mencari user berdasarkan username dan hanya yang aktif (is_active=1)
-    $query = mysqli_query($conn, "SELECT * FROM tb_user WHERE username='$username' AND is_active=1");
-    $user = mysqli_fetch_assoc($query);
+// Mencari user di database dengan kolom yang benar
+$query = mysqli_query($conn, "SELECT * FROM tb_user WHERE username='$username' AND password='$password' AND status_aktif=1");    $user = mysqli_fetch_assoc($query);
 
     if ($user) {
         // Cocokkan password yang diinput dengan password di database

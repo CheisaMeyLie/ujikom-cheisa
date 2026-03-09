@@ -1,23 +1,20 @@
 <?php
-// =============================================================================
-// FILE: config/koneksi.php
-// FUNGSI: Membuat koneksi ke database MySQL menggunakan MySQLi procedural.
-//         File ini di-include di setiap halaman yang membutuhkan akses database.
-// =============================================================================
+// Parameter koneksi dengan PORT 3307
+$host     = "127.0.0.1";
+$username = "root";
+$password = ""; 
+$database = "db_ujikom"; // Berdasarkan gambar, nama databasemu adalah db_ujikom
+$port     = 3307;        // WAJIB tambahkan ini karena Laragon kamu pakai 3307
 
-// Membuat koneksi ke database.
-// Parameter: host, username, password, nama_database
-$conn = mysqli_connect("127.0.0.1", "root", "", "db_parkir_ukk");
+// Membuat koneksi ke database dengan menyertakan port
+$conn = mysqli_connect($host, $username, $password, $database, $port);
 
-// Cek apakah koneksi berhasil. Jika gagal, hentikan eksekusi dan tampilkan pesan error.
+// Cek koneksi
 if (!$conn) {
     die("Koneksi database gagal: " . mysqli_connect_error());
 }
 
-// Set timezone PHP ke WIB (UTC+7) agar waktu yang dihasilkan date() konsisten.
+// Set timezone agar waktu parkir akurat
 date_default_timezone_set('Asia/Jakarta');
-
-// Sinkronkan timezone database MySQL agar fungsi NOW() dan CURDATE()
-// juga mengembalikan waktu WIB, bukan UTC default server.
 mysqli_query($conn, "SET time_zone = '+07:00'");
 ?>
