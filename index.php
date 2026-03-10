@@ -23,7 +23,7 @@ if (isset($_SESSION['username'])) {
 }
 
 // --- PROSES FORM LOGIN ---
-// Variabel untuk menampung pesan error jika login gagal
+// Variabel untuk menampung pesan error jika login nya gagal
 $error = '';
 
 if (isset($_POST['login'])) {
