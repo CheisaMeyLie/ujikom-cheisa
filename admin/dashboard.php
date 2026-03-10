@@ -1,10 +1,8 @@
 <?php
-// =============================================================================
 // FILE: admin/dashboard.php
 // FUNGSI: Halaman dashboard utama untuk role Admin.
 //         Menampilkan 4 statistik ringkasan dan tabel utilisasi kapasitas
 //         setiap area parkir secara real-time.
-// =============================================================================
 
 include '../config/auth.php';
 include '../config/koneksi.php';
