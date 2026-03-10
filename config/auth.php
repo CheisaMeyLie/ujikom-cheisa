@@ -15,7 +15,7 @@ function cek_login($role)
 {
     if (!isset($_SESSION['username']) || $_SESSION['level'] != $role) {
         // Redirect ke halaman login jika tidak memenuhi syarat
-        header("Location: /index.php");
+        header("Location: ../index.php");
         exit;
     }
 }

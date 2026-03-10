@@ -75,8 +75,8 @@ if (isset($_POST['masuk'])) {
     }
 }
 
-// Ambil semua area parkir untuk dropdown pilihan area
-$areas = mysqli_query($conn, "SELECT * FROM tb_area_parkir");
+// Ambil semua area parkir YANG AKTIF saja untuk dropdown pilihan area
+$areas = mysqli_query($conn, "SELECT * FROM tb_area_parkir WHERE is_active = 1");
 ?>
 <!DOCTYPE html>
 <html lang="id">

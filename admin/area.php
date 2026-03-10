@@ -22,6 +22,24 @@ if (isset($_GET['hapus'])) {
     exit;
 }
 
+// --- TOGGLE STATUS AREA (ENABLE/DISABLE) ---
+if (isset($_GET['toggle'])) {
+    $id = $_GET['toggle'];
+    // Ambil status saat ini
+    $current = mysqli_fetch_assoc(mysqli_query($conn, "SELECT is_active, nama_area FROM tb_area_parkir WHERE id_area='$id'"));
+    $new_status = $current['is_active'] ? 0 : 1;
+    $status_text = $new_status ? 'mengaktifkan' : 'menonaktifkan';
+    
+    mysqli_query($conn, "UPDATE tb_area_parkir SET is_active='$new_status' WHERE id_area='$id'");
+    
+    // Catat log aktivitas
+    $admin_id = $_SESSION['id_user'];
+    mysqli_query($conn, "INSERT INTO tb_log_aktivitas (id_user, aktivitas) VALUES ('$admin_id', '{$status_text} area: {$current['nama_area']}')");
+    
+    header("Location: area.php");
+    exit;
+}
+
 // --- LOAD DATA AREA UNTUK EDIT ---
 // Jika ada parameter ?edit=ID, ambil data area tersebut untuk mengisi form
 $edit = null;
@@ -53,8 +71,8 @@ if (isset($_POST['simpan'])) {
     $kapasitas = (int) $_POST['kapasitas_total'];
     $admin_id = $_SESSION['id_user'];
 
-    // Kapasitas tersedia diisi sama dengan kapasitas total saat pertama dibuat
-    mysqli_query($conn, "INSERT INTO tb_area_parkir (nama_area, kapasitas_total, kapasitas_tersedia) VALUES ('$nama_area','$kapasitas','$kapasitas')");
+    // Kapasitas tersedia diisi sama dengan kapasitas total saat pertama dibuat, is_active=1 (aktif)
+    mysqli_query($conn, "INSERT INTO tb_area_parkir (nama_area, kapasitas_total, kapasitas_tersedia, is_active) VALUES ('$nama_area','$kapasitas','$kapasitas', 1)");
     mysqli_query($conn, "INSERT INTO tb_log_aktivitas (id_user, aktivitas) VALUES ('$admin_id', 'Menambah area parkir baru: $nama_area')");
 }
 
@@ -260,7 +278,6 @@ $data = mysqli_query($conn, "SELECT * FROM tb_area_parkir");
             border: none;
             padding: 14px;
             border-radius: 15px;
-            font-weight: bold;
             cursor: pointer;
             transition: 0.3s;
         }
@@ -270,13 +287,61 @@ $data = mysqli_query($conn, "SELECT * FROM tb_area_parkir");
             transform: translateY(-2px);
         }
 
-        /* Grid kartu area */
+        /* === GRID AREA PARKIR === */
         .area-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
         }
 
+        /* === TOGGLE SWITCH === */
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background: #ddd;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: inline-block;
+        }
+
+        .toggle-switch.active {
+            background: var(--success);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .toggle-switch.active::after {
+            left: 27px;
+        }
+
+        .toggle-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-label {
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .toggle-label.active { color: var(--success); }
+        .toggle-label.inactive { color: #999; }
+
+        /* Kartu area */
         .area-card {
             background: white;
             border-radius: 25px;
@@ -288,14 +353,17 @@ $data = mysqli_query($conn, "SELECT * FROM tb_area_parkir");
             overflow: hidden;
         }
 
-        .area-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.06);
+        .area-card.disabled {
+            opacity: 0.6;
+            background: #f5f5f5;
         }
 
-        /* Garis oranye vertikal di sisi kiri kartu */
+        .area-card.disabled::before {
+            background: #ccc !important;
+        }
+
         .area-card::before {
-            content: "";
+            content: '';
             position: absolute;
             top: 0;
             left: 0;
@@ -474,46 +542,38 @@ $data = mysqli_query($conn, "SELECT * FROM tb_area_parkir");
             <?php while ($d = mysqli_fetch_assoc($data)) {
                 $terisi = $d['kapasitas_total'] - $d['kapasitas_tersedia'];
                 $persen = ($d['kapasitas_total'] > 0) ? ($terisi / $d['kapasitas_total']) * 100 : 0;
-                // Warna merah jika sudah penuh lebih dari 85%, hijau jika masih aman
                 $color = ($persen > 85) ? 'var(--danger)' : 'var(--success)';
-                ?>
-                <div class="area-card">
-                    <div class="area-header">
-                        <div class="area-title">
-                            <i class="fas fa-parking" style="color: var(--sidebar-color);"></i>
-                            <?= $d['nama_area'] ?>
-                        </div>
-                        <div class="badge-slot">
-                            <?= $d['kapasitas_tersedia'] ?> <span style="font-weight: 400; font-size: 11px;">Slot
-                                Tersedia</span>
-                        </div>
+                $is_active = isset($d['is_active']) ? $d['is_active'] : 1;
+                $card_class = $is_active ? '' : 'disabled';
+                $toggle_class = $is_active ? 'active' : '';
+                $label_class = $is_active ? 'active' : 'inactive';
+                $status_text = $is_active ? 'AKTIF' : 'NONAKTIF';
+            ?>
+            <div class="area-card <?= $card_class ?>">
+                <div class="area-header">
+                    <div class="area-title">
+                        <i class="fas fa-parking" style="color: var(--sidebar-color);"></i>
+                        <?= $d['nama_area'] ?>
                     </div>
-
-                    <div class="info-row">
-                        <span>Total Kapasitas</span>
-                        <b><?= $d['kapasitas_total'] ?> Slot</b>
-                    </div>
-                    <div class="info-row">
-                        <span>Kendaraan Masuk</span>
-                        <b style="color: <?= $color ?>"><?= $terisi ?> Unit</b>
-                    </div>
-
-                    <!-- Bar visual persentase terisi -->
-                    <div class="progress-container">
-                        <div class="progress-fill" style="width:<?= $persen ?>%; background: <?= $color ?>;"></div>
-                    </div>
-                    <div class="progress-text"><?= round($persen) ?>% Kapasitas Terpakai</div>
-
-                    <!-- Aksi Edit dan Hapus -->
-                    <div class="action-links">
-                        <a href="area.php?edit=<?= $d['id_area'] ?>" class="link-edit"><i class="fas fa-pen-nib"></i>
-                            Edit</a>
-                        <a href="area.php?hapus=<?= $d['id_area'] ?>" class="link-hapus"
-                            onclick="return confirm('Hapus area <?= $d['nama_area'] ?>?')">
-                            <i class="fas fa-trash"></i> Hapus
-                        </a>
-                    </div>
+                    <div class="badge-slot"><?= $d['kapasitas_tersedia'] ?> <span style="font-weight: 400; font-size: 11px;">Slot Tersedia</span></div>
                 </div>
+                <div class="info-row"><span>Total Kapasitas</span><b><?= $d['kapasitas_total'] ?> Slot</b></div>
+                <div class="info-row"><span>Kendaraan Masuk</span><b style="color: <?= $color ?>"><?= $terisi ?> Unit</b></div>
+                <div class="progress-container"><div class="progress-fill" style="width:<?= $persen ?>%; background: <?= $color ?>"></div></div>
+                <div class="progress-text"><?= round($persen) ?>% Kapasitas Terpakai</div>
+                
+                <div style="margin-top: 20px; padding-top: 15px; border-top: 1px dashed #eee; display: flex; justify-content: space-between; align-items: center;">
+                    <div class="toggle-wrapper">
+                        <span class="toggle-label <?= $label_class ?>"><?= $status_text ?></span>
+                    </div>
+                    <a href="area.php?toggle=<?= $d['id_area'] ?>" class="toggle-switch <?= $toggle_class ?>" title="Klik untuk <?= $is_active ? 'nonaktifkan' : 'aktifkan' ?>"></a>
+                </div>
+
+                <div class="action-links">
+                    <a href="area.php?edit=<?= $d['id_area'] ?>" class="link-edit"><i class="fas fa-pen-nib"></i> Edit</a>
+                    <a href="area.php?hapus=<?= $d['id_area'] ?>" class="link-hapus" onclick="return confirm('Hapus area <?= $d['nama_area'] ?>?')"><i class="fas fa-trash"></i> Hapus</a>
+                </div>
+            </div>
             <?php } ?>
         </div>
     </div>

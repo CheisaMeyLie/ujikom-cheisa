@@ -14,11 +14,11 @@ include 'config/koneksi.php';
 // yang sesuai dengan role-nya, tanpa perlu login ulang.
 if (isset($_SESSION['username'])) {
     if ($_SESSION['level'] == 'admin')
-        header('Location: /admin/dashboard.php');
+        header('Location: admin/dashboard.php');
     if ($_SESSION['level'] == 'petugas')
-        header('Location: /petugas/masuk.php');
+        header('Location: petugas/masuk.php');
     if ($_SESSION['level'] == 'owner')
-        header('Location: /owner/laporan.php');
+        header('Location: owner/laporan.php');
     exit;
 }
 
@@ -33,7 +33,7 @@ if (isset($_POST['login'])) {
 
     // Query untuk mencari user berdasarkan username dan hanya yang aktif (is_active=1)
 // Mencari user di database dengan kolom yang benar
-$query = mysqli_query($conn, "SELECT * FROM tb_user WHERE username='$username' AND password='$password' AND status_aktif=1");    $user = mysqli_fetch_assoc($query);
+$query = mysqli_query($conn, "SELECT * FROM tb_user WHERE username='$username' AND password='$password' AND is_active=1");    $user = mysqli_fetch_assoc($query);
 
     if ($user) {
         // Cocokkan password yang diinput dengan password di databaseee

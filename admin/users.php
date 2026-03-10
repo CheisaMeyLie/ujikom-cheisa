@@ -30,23 +30,51 @@ if (isset($_POST['simpan'])) {
     mysqli_query($conn, "INSERT INTO tb_log_aktivitas (id_user, aktivitas) VALUES ('$admin_id', '$log_msg')");
 }
 
-// --- GANTI PASSWORD USER ---
-// Dipanggil dari modal reset password yang muncul saat tombol kunci diklik
-if (isset($_POST['update_password'])) {
+// --- EDIT USER (UPDATE USERNAME & PASSWORD) ---
+if (isset($_POST['update_user'])) {
     $id_user = $_POST['id_user'];
+    $username_baru = mysqli_real_escape_string($conn, $_POST['username_baru']);
     $pass_baru = $_POST['password_baru'];
-    mysqli_query($conn, "UPDATE tb_user SET password='$pass_baru' WHERE id_user='$id_user'");
-    echo "<script>alert('Password berhasil diganti!'); window.location='users.php';</script>";
+    
+    // Jika password diisi, update username dan password. Jika kosong, hanya update username
+    if (!empty($pass_baru)) {
+        mysqli_query($conn, "UPDATE tb_user SET username='$username_baru', password='$pass_baru' WHERE id_user='$id_user'");
+    } else {
+        mysqli_query($conn, "UPDATE tb_user SET username='$username_baru' WHERE id_user='$id_user'");
+    }
+    
+    // Catat log aktivitas
+    $admin_id = $_SESSION['id_user'];
+    mysqli_query($conn, "INSERT INTO tb_log_aktivitas (id_user, aktivitas) VALUES ('$admin_id', 'Mengedit user: $username_baru')");
+    
+    echo "<script>alert('User berhasil diupdate!'); window.location='users.php';</script>";
 }
 
-// --- NONAKTIFKAN USER (SOFT DELETE) ---
+// --- TOGGLE STATUS USER (ENABLE/DISABLE) ---
+if (isset($_GET['toggle'])) {
+    $id = $_GET['toggle'];
+    $current = mysqli_fetch_assoc(mysqli_query($conn, "SELECT is_active, nama, username FROM tb_user WHERE id_user='$id'"));
+    $new_status = $current['is_active'] ? 0 : 1;
+    $status_text = $new_status ? 'mengaktifkan' : 'menonaktifkan';
+    
+    mysqli_query($conn, "UPDATE tb_user SET is_active='$new_status' WHERE id_user='$id'");
+    
+    $admin_id = $_SESSION['id_user'];
+    mysqli_query($conn, "INSERT INTO tb_log_aktivitas (id_user, aktivitas) VALUES ('$admin_id', '{$status_text} user: {$current['username']}')");
+    header("Location: users.php");
+    exit;
+}
+
+// --- NONAKTIFKAN USER (SOFT DELETE) - LEGACY, sekarang pakai toggle ---
 // User tidak dihapus dari database, hanya diubah is_active menjadi 0
 if (isset($_GET['hapus'])) {
     mysqli_query($conn, "UPDATE tb_user SET is_active=0 WHERE id_user='$_GET[hapus]'");
+    header("Location: users.php");
+    exit;
 }
 
-// Ambil semua user yang masih aktif, diurutkan berdasarkan level
-$data = mysqli_query($conn, "SELECT * FROM tb_user WHERE is_active=1 ORDER BY level ASC");
+// Ambil SEMUA user (aktif dan nonaktif) untuk ditampilkan dengan toggle
+$data = mysqli_query($conn, "SELECT * FROM tb_user ORDER BY is_active DESC, level ASC");
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -319,7 +347,68 @@ $data = mysqli_query($conn, "SELECT * FROM tb_user WHERE is_active=1 ORDER BY le
             transform: scale(1.1);
         }
 
-        /* === MODAL GANTI PASSWORD === */
+        /* === TOGGLE SWITCH === */
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: #ddd;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: 0.3s;
+            display: inline-block;
+        }
+
+        .toggle-switch.active {
+            background: #2ecc71;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .toggle-switch.active::after {
+            left: 22px;
+        }
+
+        /* Status indicator */
+        .status-text {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 12px;
+        }
+
+        .status-text.active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-text.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Row styling untuk user nonaktif */
+        tr.inactive-row {
+            opacity: 0.6;
+            background: #f9f9f9;
+        }
+
+        tr.inactive-row td {
+            text-decoration: line-through;
+        }
+
+        /* === MODAL EDIT USER === */
         /* Overlay gelap dengan blur saat modal terbuka */
         .modal-overlay {
             position: fixed;
@@ -412,47 +501,47 @@ $data = mysqli_query($conn, "SELECT * FROM tb_user WHERE is_active=1 ORDER BY le
             </form>
         </div>
 
-        <!-- Tabel Daftar User Aktif -->
+        <!-- Tabel Daftar User -->
         <div class="card">
-            <h3><i class="fas fa-list-ul" style="color: var(--orange-main);"></i> Daftar User Aktif</h3>
+            <h3><i class="fas fa-list-ul" style="color: var(--orange-main);"></i> Daftar User</h3>
             <table>
                 <thead>
                     <tr>
                         <th>User</th>
                         <th>Username</th>
                         <th>Akses</th>
+                        <th>Status</th>
                         <th style="text-align: center;">Kelola</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php while ($d = mysqli_fetch_assoc($data)) { ?>
-                        <tr>
+                    <?php while ($d = mysqli_fetch_assoc($data)) { 
+                        $is_active = $d['is_active'];
+                        $row_class = $is_active ? '' : 'inactive-row';
+                        $toggle_class = $is_active ? 'active' : '';
+                        $status_class = $is_active ? 'active' : 'inactive';
+                        $status_text = $is_active ? 'AKTIF' : 'NONAKTIF';
+                    ?>
+                        <tr class="<?= $row_class ?>">
                             <td style="font-weight: 600; color: #4a4036;">
                                 <i class="fas fa-user-circle" style="color: #e0e0e0; font-size: 18px;"></i>
                                 &nbsp; <?= $d['nama'] ?>
                             </td>
-                            <td><code
-                                    style="background: #f4f4f4; padding: 2px 6px; border-radius: 4px;">@<?= $d['username'] ?></code>
+                            <td><code style="background: #f4f4f4; padding: 2px 6px; border-radius: 4px;">@<?= $d['username'] ?></code></td>
+                            <td>
+                                <span class="badge badge-<?= $d['level'] ?>"><?= strtoupper($d['level']) ?></span>
                             </td>
                             <td>
-                                <!-- Badge warna dinamis sesuai level user -->
-                                <span class="badge badge-<?= $d['level'] ?>">
-                                    <?= strtoupper($d['level']) ?>
-                                </span>
+                                <span class="status-text <?= $status_class ?>"><?= $status_text ?></span>
                             </td>
                             <td align="center">
-                                <div style="display: flex; justify-content: center; gap: 8px;">
-                                    <!-- Tombol buka modal ganti password -->
-                                    <a href="#" class="btn-icon btn-key" title="Ganti Password"
-                                        onclick="showReset('<?= $d['id_user'] ?>', '<?= $d['nama'] ?>')">
-                                        <i class="fas fa-key"></i>
+                                <div style="display: flex; justify-content: center; align-items: center; gap: 12px;">
+                                    <!-- Tombol edit user -->
+                                    <a href="#" class="btn-icon btn-key" title="Edit User" onclick="showEdit('<?= $d['id_user'] ?>', '<?= $d['nama'] ?>', '<?= $d['username'] ?>')">
+                                        <i class="fas fa-edit"></i>
                                     </a>
-                                    <!-- Tombol nonaktifkan user dengan konfirmasi -->
-                                    <a class="btn-icon btn-trash" title="Nonaktifkan"
-                                        onclick="return confirm('Nonaktifkan user ini?')"
-                                        href="?hapus=<?= $d['id_user'] ?>">
-                                        <i class="fas fa-user-slash"></i>
-                                    </a>
+                                    <!-- Toggle enable/disable -->
+                                    <a href="users.php?toggle=<?= $d['id_user'] ?>" class="toggle-switch <?= $toggle_class ?>" title="Klik untuk <?= $is_active ? 'nonaktifkan' : 'aktifkan' ?>"></a>
                                 </div>
                             </td>
                         </tr>
@@ -462,40 +551,40 @@ $data = mysqli_query($conn, "SELECT * FROM tb_user WHERE is_active=1 ORDER BY le
         </div>
     </div>
 
-    <!-- Modal Reset Password -->
+    <!-- Modal Edit User -->
     <div id="modalReset" class="modal-overlay">
         <div class="modal-content">
-            <i class="fas fa-shield-alt" style="font-size: 45px; color: var(--orange-main); margin-bottom: 15px;"></i>
-            <h4 id="titleReset" style="margin-bottom: 25px; color: #4a4036;">Reset Password</h4>
+            <i class="fas fa-user-edit" style="font-size: 45px; color: var(--orange-main); margin-bottom: 15px;"></i>
+            <h4 id="titleReset" style="margin-bottom: 25px; color: #4a4036;">Edit User</h4>
             <form method="post">
-                <!-- Hidden input untuk mengirim ID user yang akan diganti passwordnya -->
                 <input type="hidden" name="id_user" id="id_user_reset">
+                <div class="input-group" style="text-align: left; margin-bottom: 15px;">
+                    <label>Username Baru</label>
+                    <input type="text" name="username_baru" id="username_reset" placeholder="Masukkan username baru" required>
+                </div>
                 <div class="input-group" style="text-align: left; margin-bottom: 20px;">
                     <label>Password Baru</label>
-                    <input type="password" name="password_baru" placeholder="Masukkan password baru" required>
+                    <input type="password" name="password_baru" placeholder="Masukkan password baru">
+                    <small style="color: #888; font-size: 11px;">*Kosongkan jika tidak ingin mengubah password</small>
                 </div>
-                <button name="update_password" class="btn-simpan" style="width: 100%; margin-bottom: 15px;">Simpan
-                    Password Baru</button>
-                <button type="button" onclick="hideReset()"
-                    style="background: none; border: none; color: #aaa; cursor: pointer;">Batal</button>
+                <button name="update_user" class="btn-simpan" style="width: 100%; margin-bottom: 15px;">Simpan Perubahan</button>
+                <button type="button" onclick="hideReset()" style="background: none; border: none; color: #aaa; cursor: pointer;">Batal</button>
             </form>
         </div>
     </div>
 
     <script>
-        // Tampilkan modal reset password dan isi nama user di judul modal
-        function showReset(id, nama) {
+        function showEdit(id, nama, username) {
             document.getElementById('modalReset').style.display = 'flex';
             document.getElementById('id_user_reset').value = id;
-            document.getElementById('titleReset').innerText = 'Reset Password: ' + nama;
+            document.getElementById('username_reset').value = username;
+            document.getElementById('titleReset').innerText = 'Edit User: ' + nama;
         }
 
-        // Sembunyikan modal reset password
         function hideReset() {
             document.getElementById('modalReset').style.display = 'none';
         }
 
-        // Tutup modal jika pengguna mengklik area di luar kotak modal
         window.onclick = function (event) {
             let modal = document.getElementById('modalReset');
             if (event.target == modal) hideReset();

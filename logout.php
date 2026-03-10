@@ -12,6 +12,6 @@ session_start();
 session_destroy();
 
 // Redirect ke halaman login setelah logout selesai
-header("Location: /index.php");
+header("Location: index.php");
 exit;
 ?>

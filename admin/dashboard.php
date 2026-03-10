@@ -29,8 +29,8 @@ $masukHariIni = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total
 // Total jumlah area parkir yang terdaftar
 $area = mysqli_fetch_assoc(mysqli_query($conn, "SELECT COUNT(*) as total FROM tb_area_parkir"));
 
-// Data per area: kapasitas total, tersedia, dan terpakai (untuk tabel utilisasi)
-$qAreaPakai = mysqli_query($conn, "SELECT nama_area, kapasitas_total, kapasitas_tersedia, (kapasitas_total - kapasitas_tersedia) as terpakai FROM tb_area_parkir");
+// Data per area: kapasitas total, tersedia, dan terpakai (untuk tabel utilisasi) - HANYA AREA AKTIF
+$qAreaPakai = mysqli_query($conn, "SELECT nama_area, kapasitas_total, kapasitas_tersedia, (kapasitas_total - kapasitas_tersedia) as terpakai FROM tb_area_parkir WHERE is_active = 1");
 ?>
 <!DOCTYPE html>
 <html lang="id">
