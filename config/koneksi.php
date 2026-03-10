@@ -14,7 +14,7 @@ if (!$conn) {
     die("Koneksi database gagal: " . mysqli_connect_error());
 }
 
-// Set timezone agar waktu parkir akurat
+// Set timezone waktu agar waktu parkir akurat mengikuti waktu yang ada
 date_default_timezone_set('Asia/Jakarta');
 mysqli_query($conn, "SET time_zone = '+07:00'");
 ?>

@@ -1,9 +1,7 @@
 <?php
-// =============================================================================
 // FILE: index.php
 // FUNGSI: Halaman login utama sistem parkir Play Park.
 //         Menangani autentikasi pengguna dan redirect berdasarkan role.
-// =============================================================================
 
 // Mulai session untuk menyimpan data login pengguna
 session_start();

@@ -1,9 +1,7 @@
 <?php
-// =============================================================================
 // FILE: config/auth.php
 // FUNGSI: Menyediakan fungsi autentikasi dan proteksi halaman berdasarkan role.
 //         Di-include di awal setiap halaman yang memerlukan login.
-// =============================================================================
 
 // Mulai session PHP. Harus dipanggil sebelum mengakses $_SESSION.
 session_start();

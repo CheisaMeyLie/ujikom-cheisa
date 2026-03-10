@@ -1,10 +1,8 @@
 <?php
-// =============================================================================
 // FILE: admin/users.php
 // FUNGSI: Halaman manajemen akun pengguna untuk Admin.
 //         Mendukung operasi: tambah user baru, ganti password user, dan
 //         menonaktifkan user (soft delete dengan is_active=0).
-// =============================================================================
 
 include '../config/auth.php';
 include '../config/koneksi.php';

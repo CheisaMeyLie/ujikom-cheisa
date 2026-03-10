@@ -1,10 +1,8 @@
 <?php
-// =============================================================================
 // FILE: admin/tarif.php
 // FUNGSI: Halaman manajemen tarif parkir untuk Admin.
 //         Mendukung operasi Upsert (insert jika belum ada, update jika sudah ada)
 //         berdasarkan jenis kendaraan, serta hapus tarif.
-// =============================================================================
 
 include '../config/auth.php';
 include '../config/koneksi.php';

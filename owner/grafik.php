@@ -1,11 +1,8 @@
 <?php
-// =============================================================================
 // FILE: owner/grafik.php
 // FUNGSI: Halaman analisis bisnis bergrafik untuk role Owner.
 //         Menampilkan tren pendapatan 7 hari terakhir menggunakan Chart.js
 //         dengan data diambil langsung dari database secara real-time.
-// =============================================================================
-
 include '../config/auth.php';
 include '../config/koneksi.php';
 cek_login('owner');

@@ -1,10 +1,8 @@
 <?php
-// =============================================================================
 // FILE: admin/log.php
 // FUNGSI: Halaman log aktivitas sistem untuk Admin.
 //         Menampilkan riwayat seluruh tindakan yang dilakukan oleh semua user
 //         (masuk kendaraan, keluar, perubahan tarif, dll.) secara kronologis.
-// =============================================================================
 
 include '../config/auth.php';
 include '../config/koneksi.php';

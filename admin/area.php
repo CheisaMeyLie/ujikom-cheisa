@@ -1,10 +1,8 @@
 <?php
-// =============================================================================
 // FILE: admin/area.php
 // FUNGSI: Halaman manajemen area parkir untuk Admin.
 //         Mendukung operasi: tambah area baru, edit area, dan hapus area.
 //         Juga melakukan sinkronisasi otomatis kapasitas tersedia saat halaman dibuka.
-// =============================================================================
 
 include '../config/auth.php';
 include '../config/koneksi.php';

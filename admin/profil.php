@@ -1,10 +1,8 @@
 <?php
-// =============================================================================
 // FILE: admin/profil.php
 // FUNGSI: Menangani proses ganti password untuk akun yang sedang login.
 //         Tidak memiliki tampilan HTML sendiri; setelah berhasil langsung
 //         redirect ke dashboard.
-// =============================================================================
 
 include '../config/auth.php';
 include '../config/koneksi.php';

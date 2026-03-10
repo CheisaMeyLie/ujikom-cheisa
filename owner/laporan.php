@@ -1,10 +1,8 @@
 <?php
-// =============================================================================
 // FILE: owner/laporan.php
 // FUNGSI: Halaman laporan pendapatan untuk role Owner.
 //         Menampilkan daftar transaksi yang sudah selesai (status='paid')
 //         dengan filter rentang tanggal. Mendukung ekspor ke format Excel.
-// =============================================================================
 
 include '../config/auth.php';
 include '../config/koneksi.php';

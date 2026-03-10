@@ -9,7 +9,7 @@ session_start();
 // Hancurkan semua data session yang tersimpan (username, level, id_user, dll.)
 session_destroy();
 
-// Redirect ke halaman login setelah logout selesai
+// Redirect ke halaman login nya setelah logout selesai
 header("Location: index.php");
 exit;
 ?>
