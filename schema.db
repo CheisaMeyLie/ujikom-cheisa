@@ -1,0 +1,67 @@
+tb_user
+    CREATE TABLE tb_user (
+    id_user INT AUTO_INCREMENT PRIMARY KEY,
+    nama VARCHAR(100) NOT NULL,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    level ENUM('admin','petugas','owner') NOT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB;
+
+tb_area_parkir
+    CREATE TABLE tb_area_parkir (
+    id_area INT AUTO_INCREMENT PRIMARY KEY,
+    nama_area VARCHAR(50) NOT NULL,
+    kapasitas_total INT NOT NULL,
+    kapasitas_tersedia INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB;
+
+tb_tarif
+    CREATE TABLE tb_tarif (
+    id_tarif INT AUTO_INCREMENT PRIMARY KEY,
+    jenis_kendaraan ENUM('Motor','Mobil') NOT NULL,
+    harga_per_jam INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uniq_jenis (jenis_kendaraan)
+    ) ENGINE=InnoDB;
+
+tb_kendaraan
+    CREATE TABLE tb_kendaraan (
+    id_kendaraan INT AUTO_INCREMENT PRIMARY KEY,
+    plat_nomor VARCHAR(15) NOT NULL UNIQUE,
+    jenis_kendaraan ENUM('Motor','Mobil') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB;
+
+tb_transaksi
+    CREATE TABLE tb_transaksi (
+    id_transaksi INT AUTO_INCREMENT PRIMARY KEY,
+    kode_tiket VARCHAR(30) NOT NULL UNIQUE,
+    plat_nomor VARCHAR(15) NOT NULL,
+    jenis_kendaraan ENUM('Motor','Mobil') NOT NULL,
+    id_area INT NOT NULL,
+    id_user INT NOT NULL,
+    waktu_masuk DATETIME NOT NULL,
+    waktu_keluar DATETIME NULL,
+    durasi_jam INT NULL,
+    biaya INT NULL,
+    uang_bayar INT NULL,
+    kembalian INT NULL,
+    status ENUM('masuk','keluar','paid') NOT NULL DEFAULT 'masuk',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_transaksi_area FOREIGN KEY (id_area) REFERENCES tb_area_parkir(id_area),
+    CONSTRAINT fk_transaksi_user FOREIGN KEY (id_user) REFERENCES tb_user(id_user)
+    ) ENGINE=InnoDB;
+
+tb_log_aktivitas
+    CREATE TABLE tb_log_aktivitas (
+    id_log INT AUTO_INCREMENT PRIMARY KEY,
+    id_user INT NOT NULL,
+    aktivitas VARCHAR(255) NOT NULL,
+    waktu DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_log_user FOREIGN KEY (id_user) REFERENCES tb_user(id_user)
+    ) ENGINE=InnoDB;
