@@ -1,0 +1,86 @@
+================================================================================
+MATERI PROYEK: PLAY PARK - SISTEM MANAJEMEN PARKIR
+================================================================================
+
+1. DESKRIPSI PROYEK
+--------------------------------------------------------------------------------
+Play Park adalah sebuah aplikasi web berbasis PHP untuk mengelola operasional parkir secara terintegrasi. Sistem ini dirancang untuk menggantikan pencatatan manual dan meminimalisir kesalahan perhitungan biaya parkir. Aplikasi ini memiliki tiga jenis pengguna dengan hak akses berbeda: Administrator, Petugas, dan Owner.
+
+2. FITUR UTAMA APLIKASI
+--------------------------------------------------------------------------------
+A. Fitur Petugas
+- Input kendaraan masuk dengan pemilihan area dan jenis kendaraan
+- Cetak struk tiket masuk langsung dari browser (Generate Kode Tiket Otomatis)
+- Proses checkout kendaraan keluar dengan kalkulasi biaya otomatis berdasarkan tarif dan durasi
+- Hitung kembalian secara real-time tanpa perlu kalkulator manual
+- Cetak struk pembayaran keluar
+
+B. Fitur Admin
+- Dashboard statistik: menampilkan jumlah user aktif, kendaraan sedang parkir, dan utilisasi kapasitas area
+- Manajemen area parkir (Tambah, Edit, Hapus) dengan sinkronisasi kapasitas otomatis
+- Pengaturan tarif per jam berdasarkan jenis kendaraan
+- Manajemen akun pengguna: tambah user, edit, reset password, nonaktifkan akun (Soft Delete)
+- Log aktivitas: merekam seluruh aktivitas pengguna di sistem untuk keperluan audit (Cetak tiket, login, ubah data)
+
+C. Fitur Owner
+- Laporan pendapatan harian dengan filter rentang tanggal
+- Ekspor laporan ke file Excel (.xls) langsung dari browser
+- Grafik tren pendapatan 7 hari terakhir (menggunakan library Chart.js)
+
+3. STRUKTUR DIREKTORI & MODUL
+--------------------------------------------------------------------------------
+Aplikasi menggunakan pola prosedural terstruktur:
+- /index.php : Halaman login utama
+- /config/ : Berisi konfigurasi database (koneksi.php) dan proteksi sesi keamanan (auth.php)
+- /admin/ : Direktori halaman panel kendali admin (dashboard, area, tarif, akun, log)
+- /petugas/ : Direktori halaman operasional parkir (kendaraan masuk, keluar, struk/karcis)
+- /owner/ : Direktori halaman laporan manajemen (laporan Excel, grafik pendapatan)
+- /assets/ & /gambar/ : Direktori untuk file statis seperti CSS tambahan, framework, dan gambar
+
+4. PERANCANGAN DATABASE (db_parkir_ukk)
+--------------------------------------------------------------------------------
+Sistem menggunakan database relasional MySQL dengan 6 tabel utama:
+
+a. tb_user
+Menyimpan data akun. Kolom: id_user, nama, username, password, level (admin/petugas/owner), is_active.
+
+b. tb_area_parkir
+Menyimpan data master area. Kolom: id_area, nama_area, kapasitas_total, kapasitas_tersedia.
+
+c. tb_tarif
+Menyimpan master biaya. Kolom: id_tarif, jenis_kendaraan, harga_per_jam.
+
+d. tb_kendaraan
+Master plat nomor kendaraan. Kolom: id_kendaraan, plat_nomor, jenis_kendaraan.
+
+e. tb_transaksi
+Menyimpan riwayat keluar-masuk.
+Relasi: id_area (ke tb_area_parkir), id_user (ke tb_user).
+Kolom Penting: kode_tiket, plat_nomor, waktu_masuk, waktu_keluar, durasi_jam, biaya, status (masuk/keluar/paid).
+
+f. tb_log_aktivitas
+Merekam jejak audit. Relasi: id_user (ke tb_user).
+
+5. ALUR PENGGUNAAN (USE CASE & FLOW)
+--------------------------------------------------------------------------------
+- Alur Login: Pengguna memasukkan kredensial, sistem mengecek role level dan status is_active.
+- Alur Parkir Masuk: Petugas memasukkan Plat Nomor & Jenis. Sistem membuat Kode Tiket unik (TKT-YYYYMMDDHHIISS) dan memotong "kapasitas_tersedia" area sebanyak -1.
+- Alur Checkout Parkir Keluar: Petugas mencari/scan kode tiket -> Sistem melihat waktu masuk vs waktu sekarang -> Durasi dihitung (dibulatkan ke atas/ceil) dikalikan tarif per jam -> Petugas input nominal bayar -> Struk dibuat -> Kapasitas area dikembalikan +1.
+- Alur Pelaporan: Owner memilih parameter bulan/tanggal -> query data tb_transaksi berstatus 'paid' -> generate laporan Excel atau render grafik Chart.js.
+
+6. TEKNOLOGI YANG DIGUNAKAN
+--------------------------------------------------------------------------------
+- Backend: PHP (Procedural)
+- Database: MySQL (Ekstensi MySQLi untuk PHP)
+- Keamanan: PHP Native Session
+- Frontend: HTML5, CSS3 Vanilla
+- Ikon: Font Awesome 6
+- Grafik Data: Chart.js (CDN)
+- Web Server Teruji: Apache (XAMPP/MAMP/LAMP)
+
+7. CATATAN PENGEMBANGAN (TECHNICAL NOTES)
+--------------------------------------------------------------------------------
+- Penghapusan akun menggunakan konsep Soft Delete (mengosongkan is_active) agar relasi ke log aktivitas dan transaksi masa lalu tidak rusak (menjaga integritas data).
+- Pembulatan kalkulasi durasi mengikuti logika ceil, misal: durasi 1 jam 5 menit akan terhitung sebagai 2 jam tarif.
+- Plat nomor dikonversi ke format Uppercase otomatis di form input agar konsisten untuk pencarian data.
+- Sinkronisasi kapasitas parkir berjalan otomatis ketika laman dibaca, guna menghindari anomali jika operasional manual dilakukan via database.
