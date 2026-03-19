@@ -21,7 +21,7 @@ tb_area_parkir
 tb_tarif
     CREATE TABLE tb_tarif (
     id_tarif INT AUTO_INCREMENT PRIMARY KEY,
-    jenis_kendaraan ENUM('Motor','Mobil') NOT NULL,
+    jenis_kendaraan VARCHAR(50) NOT NULL,
     harga_per_jam INT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uniq_jenis (jenis_kendaraan)

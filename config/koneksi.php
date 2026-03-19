@@ -1,4 +1,8 @@
 <?php
+// FILE: config/koneksi.php
+// FUNGSI: Konfigurasi dan koneksi database untuk sistem Play Park.
+//         Menggunakan database db_ujikom dengan port 3307 untuk Laragon.
+
 // Parameter koneksi dengan PORT 3307
 $host     = "127.0.0.1";
 $username = "root";
